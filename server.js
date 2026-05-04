@@ -1,12 +1,15 @@
 const express = require("express");
 const app = express();
 
-const options = {
-  key: fs.readFileSync('/etc/letsencrypt/live/flagstore.duckdns.org/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/flagstore.duckdns.org/fullchain.pem'),
-};
+app.get("/secure", (req, res) => {
+	  const email = req.headers["cf-access-authenticated-user-email"] || "unknown";
+	  const country = req.headers["cf-ipcountry"] || "unknown";
 
-https.createServer(options, (req, res) => {
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ headers: req.headers }, null, 2));
-}).listen(443, () => console.log('Listening on :443'));
+	  res.send(`
+	      <h1>Secure Page</h1>
+	          <p>${email} authenticated at ${new Date().toISOString()} from ${country}</p>
+		      <a href="/secure/${country}">View Flag</a>
+		        `);
+});
+
+app.listen(3000, '0.0.0.0', () => console.log("Server running on port 3000"));
